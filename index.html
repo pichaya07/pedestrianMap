@@ -1,0 +1,139 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<!-- Leaflet library-->
+		<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+		<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+
+		<!-- map -->
+
+		<link rel="stylesheet" href="custom.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+		<!-- leaflet -->
+
+		<!-- JQuery -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+		<title>Pedestrian map for Blind</title>
+	</head>
+	<body>
+		
+		<div id="map">
+			
+		</div>
+
+		<div class="over_map">
+			<input type="button" id="get_direction" class="bnt" value="Get direction" name="1" onclick="getDirection(this.name)" />
+			
+		</div>
+
+		<div class="over_map input" id="inputOD">
+				<input class="search origin" type="text" placeholder="from" onchange="setStartPoint(this.value)"></input>
+				<input class="search dest" type="text" placeholder="to" onchange="setDestPoint(this.value)"></input>
+				<input type="button" class="bnt inline" value="GO !!" onclick="route(origin,dest)" />
+		</div>
+
+		<div id="searchBox">
+			<input type="text" placeholder="search place" onchange="searchPlace(this.value)"></input>
+			<div id="search_result">
+		</div>
+		</div>
+		
+	</body>
+</html>
+
+<script src="map.js"></script>
+
+<script>
+
+//search
+
+function searchPlace(place){
+
+	var search_url = 'http://nominatim.openstreetmap.org/search.php?format=json&q='+place+'&polygon=1&viewbox=';
+	console.log(search_url);
+
+
+	$.ajax({
+		url: search_url, 
+		dataType : 'json',
+		beforeSend : function(){
+			var div_searchBox = document.getElementById('searchBox');
+			div_searchBox.innerHTML = div_searchBox.innerHTML + '<img id="loader" src="image/loader.gif">';
+		},
+		success: function(res){
+			document.getElementById('search_result').style.visibility = "visible";
+
+        	console.log(res);
+        	
+        	var div_result = document.getElementById('search_result');
+        	var lat,lon,placeName;
+
+        	//clear previous search
+        	div_result.innerHTML = '';
+
+        	if(res.length == 0)//if no result
+        		div_result.innerHTML = '<div class="search_res noResult">Sorry, no result</div>';
+        	else{
+        		//show result
+	        	for(var i = 0; i<res.length; i++){
+	        		lat = res[i].lat;
+	        		lon = res[i].lon;
+	        		placeName = res[i].display_name;
+	        		div_result.innerHTML = div_result.innerHTML + '<div class="search_res" onclick="moveTo('+lat+","+lon+')">'+placeName+'</div>';
+	        	}
+        	}
+        	
+	    },
+	    complete: function() {
+	    	document.getElementById("loader").remove();
+	    }
+	});
+}
+
+function moveTo(lat,lon){
+	var circle;
+	map.panTo(L.latLng(lat, lon));
+
+	circle_layer.clearLayers();
+
+	circle = new L.circle([lat, lon], 300, {
+	    color: 'red',
+	    fillColor: '#f03',
+	    fillOpacity: 0.5
+	}).addTo(circle_layer);
+
+	circle.bindPopup("[lat,lon] : ["+lat+","+lon+"]");
+
+}
+
+function getDirection(value){
+	console.log(value);
+	if(value==1){
+		document.getElementById('inputOD').style.visibility = "visible";
+		document.getElementById('get_direction').name= "0";
+		document.getElementById('get_direction').value= "collapse";
+		
+	}
+	else{
+		document.getElementById('inputOD').style.visibility = "hidden";
+		document.getElementById('get_direction').name = "1";
+		document.getElementById('get_direction').value= "Get direction";
+	}
+		
+}
+function setStartPoint(){
+	
+}
+
+function setDestPoint(){
+	
+}
+
+function route(origin,dest){
+
+
+}
+	
+</script>
