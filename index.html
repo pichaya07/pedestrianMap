@@ -32,11 +32,11 @@
 
 		<div class="over_map input" id="inputOD">
 			<div id="div_origin">
-				<input id="origin" class="search origin" type="text" placeholder="from" onchange="selectStartPoint(this.value)"></input>
+				<input id="origin" class="search origin" type="text" placeholder="from" onchange="selectStartPoint(this.value)" onclick="clearSearchResultDiv()"></input>
 				<div id="search_result_org"></div>
 			</div>
 			<div id="div_dest">
-				<input id="dest" class="search dest" type="text" placeholder="to" onchange="selectDestPoint(this.value)"></input>
+				<input id="dest" class="search dest" type="text" placeholder="to" onchange="selectDestPoint(this.value)" onclick="clearSearchResultDiv()"></input>
 				<div id="search_result_dest"></div>
 			</div>
 			<div id="div_button_go">
@@ -58,6 +58,10 @@
 
 var origin,dest,org_lat,org_lon,dest_lat,dest_lon;
 var color;
+
+//clear searchBox
+document.getElementById('origin').value = "";
+document.getElementById('dest').value = "";
 
 
 //search
@@ -159,21 +163,26 @@ function selectStartPoint(str){
 			div_searchBox.innerHTML = div_searchBox.innerHTML + '<img id="loader" src="image/loader.gif">';
 		},
 		success: function(res){
-			console.log(res);
-			org_lat = res[0].lat;
-			org_lon = res[0].lon;	
+			console.log(res.length);
+			
 			document.getElementById('search_result_org').style.visibility = "visible";
 			var div_result = document.getElementById('search_result_org');
+			div_result.innerHTML = ''; //clear div
 
-			//show result
-			for(var i = 0; i<res.length; i++){
+			if(res.length == 0){//if no result
+        		div_result.innerHTML = '<div class="search_res">Sorry, no result</div>';
+        	}
+			else{
+				for(var i = 0; i<res.length; i++){
 	        		lat = res[i].lat;
 	        		lon = res[i].lon;
 	        		placeName = res[i].display_name;
 	        		var shorten_placeName = "'"+placeName.toString()+"'";
-	        		console.log('<div class="search_res" onclick="setStartPoint('+lat+","+lon+','+shorten_placeName+')">'+placeName+'</div>');
 	        		div_result.innerHTML = div_result.innerHTML + '<div class="search_res" onclick="setStartPoint('+lat+","+lon+','+shorten_placeName+')">'+placeName+'</div>';
 	        	}
+
+			}	
+			
 	    },
 	    complete: function() {
 	    	document.getElementById("loader").remove();
@@ -201,20 +210,25 @@ function selectDestPoint(end){
 		},
 		success: function(res){
 			console.log(res);
-			dest_lat = res[0].lat;
-			dest_lon = res[0].lon;	
+			
 			document.getElementById('search_result_dest').style.visibility = "visible";
 
 			var div_result = document.getElementById('search_result_dest');
+			div_result.innerHTML = ''; //clear div
 
 			//show result
-			for(var i = 0; i<res.length; i++){
+			if(res.length == 0){//if no result
+        		div_result.innerHTML = '<div class="search_res">Sorry, no result</div>';
+        	}
+			else{
+				for(var i = 0; i<res.length; i++){
 	        		lat = res[i].lat;
 	        		lon = res[i].lon;
 	        		placeName = res[i].display_name;
 	        		var shorten_placeName = "'"+placeName.toString()+"'";
 	        		div_result.innerHTML = div_result.innerHTML + '<div class="search_res" onclick="setDestPoint('+lat+","+lon+','+shorten_placeName+')">'+placeName+'</div>';
 	        	}
+			}
 	    },
 	    complete: function() {
 	    	document.getElementById("loader").remove();
@@ -225,7 +239,8 @@ function selectDestPoint(end){
 
 function setStartPoint(lat,lon,name){
 	console.log(lat+" "+lon);
-
+	org_lat = lat;
+	org_lon = lon;	
 	document.getElementById("origin").value = name;
 	origin = document.getElementById('origin').value;
 	
@@ -234,19 +249,21 @@ function setStartPoint(lat,lon,name){
 
 function setDestPoint(lat,lon,name){
 	console.log(lat+" "+lon);
+	dest_lat = lat;
+	dest_lon = lon;	
 
 	document.getElementById("dest").value = name;
 	dest = document.getElementById('dest').value;
 
 }
 
-function convertPlaceNameToCoor(){
-	origin = document.getElementById('origin').value;
-	dest = document.getElementById('dest').value;
-
-	calRoute();
+function clearSearchResultDiv(){
+	document.getElementById('search_result_org').style.visibility = "hidden";
+	document.getElementById('search_result_dest').style.visibility = "hidden";
 
 }
+
+
 
 function calRoute(){ //calRoute : use Skobbler service 
 
@@ -265,8 +282,13 @@ function calRoute(){ //calRoute : use Skobbler service
 		beforeSend : function(){
 			var div_searchBox = document.getElementById('div_button_go');
 			div_searchBox.innerHTML = div_searchBox.innerHTML + '<img id="loader" src="image/loader.gif">';
+
+			//change cursot to be wait
+			document.body.style.cursor = 'wait';
+
 		},
 		success: function(res){
+			document.body.style.cursor = 'default';
 			console.log(res.route);
 			var pos_array = res.route;
 
