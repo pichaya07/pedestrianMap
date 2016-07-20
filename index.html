@@ -10,6 +10,8 @@
 		<link rel="stylesheet" href="custom.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
+		<script src="skobbler-2.0.js"></script>
+
 		<!-- leaflet -->
 
 		<!-- JQuery -->
@@ -29,9 +31,9 @@
 		</div>
 
 		<div class="over_map input" id="inputOD">
-				<input class="search origin" type="text" placeholder="from" onchange="setStartPoint(this.value)"></input>
-				<input class="search dest" type="text" placeholder="to" onchange="setDestPoint(this.value)"></input>
-				<input type="button" class="bnt inline" value="GO !!" onclick="route(origin,dest)" />
+				<input id="origin" class="search origin" type="text" placeholder="from" onchange="setStartPoint(this.value)"></input>
+				<input id="dest" class="search dest" type="text" placeholder="to" onchange="setDestPoint(this.value)"></input>
+				<input type="button" class="bnt inline" value="GO !!" onclick="convertPlaceNameToCoor()" />
 		</div>
 
 		<div id="searchBox">
@@ -46,6 +48,9 @@
 <script src="map.js"></script>
 
 <script>
+
+var origin,dest,org_lat,org_lon,dest_lat,dest_lon;
+
 
 //search
 
@@ -123,17 +128,121 @@ function getDirection(value){
 	}
 		
 }
-function setStartPoint(){
-	
+function setStartPoint(str){
+	origin = str;
+	console.log(origin);
 }
 
-function setDestPoint(){
-	
+function setDestPoint(end){
+	dest = end;
+	console.log(dest);
+
 }
 
-function route(origin,dest){
+function convertPlaceNameToCoor(){
+	origin = document.getElementById('origin').value;
+	dest = document.getElementById('dest').value;
+
+	//sample request == http://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=berlin&format=json&limit=1
+	var res_orgin_req = 'http://nominatim.openstreetmap.org/?format=json&addressdetails=1&q='+origin+'&format=json&limit=1';
+
+	var res_dest_req = 'http://nominatim.openstreetmap.org/?format=json&addressdetails=1&q='+dest+'&format=json&limit=1';
+
+	$.ajax({
+		url: res_orgin_req, 
+		dataType : 'json',
+		success: function(res){
+			console.log(res);
+			org_lat = res[0].lat;
+			org_lon = res[0].lon;	
+
+			$.ajax({
+				url: res_dest_req, 
+				dataType : 'json',
+				success: function(result){
+					console.log(result);
+					dest_lat = result[0].lat;
+					dest_lon = result[0].lon;	
+					calRoute();
+			    }
+			});
+	    }
+	});
+
+	
+
+}
+
+function calRoute(){ //calRoute : use Skobbler service 
+
+	
+	route_layer.clearLayers(); //clear previous route
+
+	var requestRoute = 'http://'+API_KEY+'.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/'+API_KEY+'?start='+org_lat+','+org_lon+'&dest='+dest_lat+','+dest_lon+'&profile=pedestrian&advice=yes&points=yes';
+
+	console.log(requestRoute);
+
+	$.ajax({
+		url: requestRoute, 
+		dataType : 'json',
+		beforeSend : function(){
+			
+		},
+		success: function(res){
+			console.log(res.route);
+			var pos_array = res.route;
+
+			var lat,lon,dist,inst,marker; //inst == instruction
+			console.log(res.status.apiMessage);
+
+			var routePoint = res.route.routePoints;
+			//draw route;
+
+			var latlng_arr = [], latlng;
+			for(var i = 0; i < routePoint.length ; i++){
+					lat = routePoint[i].y;
+					lon = routePoint[i].x;
+
+					latlng = new L.LatLng(lat, lon);
+					latlng_arr.push(latlng);
+					
+			}
+
+			var polyline = new L.Polyline(latlng_arr, {
+				color: 'red',
+				weight: 6,
+				smoothFactor: 1,
+				opacity: .7,
+                dashArray: '20,15',
+                lineJoin: 'round'
+
+			});
+
+			polyline.addTo(route_layer);
+
+			
+			
+			for(var i = 0; i < pos_array.advisor.length ; i++){
+					lat = pos_array.advisor[i].coordinates.y;
+					lon = pos_array.advisor[i].coordinates.x;
+					dist = pos_array.advisor[i].distance;
+					inst = pos_array.advisor[i].instruction;
+					console.log(lat+" , "+lon+" dist: "+dist+" dest: "+inst);
+					map.panTo(L.latLng(lat, lon));
+					marker = L.marker([lat, lon]).addTo(route_layer);
+					marker.bindPopup(i+") "+inst);
+			}
+	    },
+	    complete: function() {
+	    	
+	    }
+	});
 
 
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 	
 </script>
