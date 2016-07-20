@@ -50,6 +50,7 @@
 <script>
 
 var origin,dest,org_lat,org_lon,dest_lat,dest_lon;
+var color;
 
 
 //search
@@ -198,18 +199,40 @@ function calRoute(){ //calRoute : use Skobbler service
 			var routePoint = res.route.routePoints;
 			//draw route;
 
-			var latlng_arr = [], latlng;
+			var latlng_arr = [],latlng_arr_bad = [], latlng;
+
 			for(var i = 0; i < routePoint.length ; i++){
 					lat = routePoint[i].y;
 					lon = routePoint[i].x;
 
 					latlng = new L.LatLng(lat, lon);
 					latlng_arr.push(latlng);
+
+
+					//random select bad path
+					var rand_item = latlng_arr[Math.floor(Math.random()*latlng_arr.length)];
+					//latlng_arr_bad.push(rand_item);
+
+
+					//// DEMO /////
+					var rand = getRandomInt(0, 3);
+					if(rand == 3){
+						var badarea = L.circle([lat, lon], 5, {
+									    color: 'red',
+									    fillColor: '#f03',
+									    fillOpacity: 0.5
+									}).addTo(badRoute_layer);
+						badarea.bindPopup("ซ่อมท่อ");
+					}
+					
+					//////////////////////////
 					
 			}
 
-			var polyline = new L.Polyline(latlng_arr, {
-				color: 'red',
+			console.log("bad route"+latlng_arr_bad);
+
+			var route_line = new L.Polyline(latlng_arr, {
+				color: 'blue',
 				weight: 6,
 				smoothFactor: 1,
 				opacity: .7,
@@ -218,10 +241,8 @@ function calRoute(){ //calRoute : use Skobbler service
 
 			});
 
-			polyline.addTo(route_layer);
+			route_line.addTo(route_layer);
 
-			
-			
 			for(var i = 0; i < pos_array.advisor.length ; i++){
 					lat = pos_array.advisor[i].coordinates.y;
 					lon = pos_array.advisor[i].coordinates.x;
