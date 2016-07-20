@@ -12,10 +12,11 @@ var osm_skobbler = new L.tileLayer('http://tiles2-b53b3acef8808a2c0e5fea3c69912e
 var circle_layer = L.layerGroup();
 var route_layer = L.layerGroup();
 var badRoute_layer = L.layerGroup();
+var turningPoint_layer = L.layerGroup();
 
 
 var map = L.map('map', {
-    layers: [osm_default,circle_layer,route_layer,badRoute_layer],
+    layers: [osm_default,circle_layer,route_layer,badRoute_layer,turningPoint_layer],
     center: [14.069282, 100.606407], //SIIT :) ,
     zoom: 15
 }),drawnItems = L.featureGroup().addTo(map);
@@ -24,12 +25,13 @@ var baseMaps = {
     "Default": osm_default,
     "Stamen": osm_stamen,
     "Transport" :osm_transport,
-    "Skobbler" : osm_skobbler
+    "Skobbler" : osm_skobbler,
 };
 
 var overlayMaps = {
     "Position": circle_layer,
     "ROUTE" : route_layer,
+    "Truning Point" : turningPoint_layer,
     "Caution" : badRoute_layer
 };
 

@@ -64,6 +64,37 @@ document.getElementById('origin').value = "";
 document.getElementById('dest').value = "";
 
 
+//start point marker style
+var origin_icon = L.icon({
+    iconUrl: 'image/start.png',
+    iconSize:     [48, 75], // size of the icon
+    shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [22, 74], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+//end point marker style
+var dest_icon = L.icon({
+    iconUrl: 'image/dest.png',
+    iconSize:     [48, 75], // size of the icon
+    shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [22, 74], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+var warning_icon = L.icon({
+    iconUrl: 'image/warning.png',
+    iconSize:     [38, 45], // size of the icon
+    shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [22, 44], // point of the icon which will correspond to marker's location
+    shadowAnchor: [4, 62],  // the same for the shadow
+    popupAnchor:  [-3, -36] // point from which the popup should open relative to the iconAnchor
+});
+
+
+
 //search
 
 function searchPlace(place){
@@ -86,9 +117,6 @@ function searchPlace(place){
         	
         	var div_result = document.getElementById('search_result');
         	var lat,lon,placeName;
-
-        	//clear previous search
-        	div_result.innerHTML = '';
 
         	if(res.length == 0)//if no result
         		div_result.innerHTML = '<div class="search_res noResult">Sorry, no result</div>';
@@ -271,6 +299,7 @@ function calRoute(){ //calRoute : use Skobbler service
 	document.getElementById('search_result_dest').style.visibility = "hidden";
 
 	route_layer.clearLayers(); //clear previous route
+	turningPoint_layer.clearLayers();
 
 	var requestRoute = 'http://'+API_KEY+'.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/'+API_KEY+'?start='+org_lat+','+org_lon+'&dest='+dest_lat+','+dest_lon+'&profile=pedestrian&advice=yes&points=yes';
 
@@ -307,6 +336,12 @@ function calRoute(){ //calRoute : use Skobbler service
 					latlng = new L.LatLng(lat, lon);
 					latlng_arr.push(latlng);
 
+					//set start point marker
+					if(i == 0)
+						marker = L.marker([lat, lon], {icon: origin_icon}).addTo(route_layer);
+					//set end point marker
+					if(i == routePoint.length - 1)
+						marker = L.marker([lat, lon],{icon: dest_icon}).addTo(route_layer);
 
 					//random select bad path
 					var rand_item = latlng_arr[Math.floor(Math.random()*latlng_arr.length)];
@@ -316,11 +351,7 @@ function calRoute(){ //calRoute : use Skobbler service
 					//// DEMO /////
 					var rand = getRandomInt(0, 3);
 					if(rand == 3){
-						var badarea = L.circle([lat, lon], 5, {
-									    color: 'red',
-									    fillColor: '#f03',
-									    fillOpacity: 0.5
-									}).addTo(badRoute_layer);
+						var badarea = L.marker([lat, lon], {icon: warning_icon}).addTo(badRoute_layer);
 						badarea.bindPopup("ซ่อมท่อ");
 					}
 					
@@ -349,9 +380,13 @@ function calRoute(){ //calRoute : use Skobbler service
 					inst = pos_array.advisor[i].instruction;
 					console.log(lat+" , "+lon+" dist: "+dist+" dest: "+inst);
 					map.panTo(L.latLng(lat, lon));
-					marker = L.marker([lat, lon]).addTo(route_layer);
+					marker = L.marker([lat, lon]).addTo(turningPoint_layer);
 					marker.bindPopup(i+") "+inst);
 			}
+
+
+
+
 	    },
 	    complete: function() {
 	    	document.getElementById("loader").remove();
