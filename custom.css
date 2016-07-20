@@ -20,7 +20,7 @@ html, body, #map,.row-fluid {
 }
 
 .over_map.input{
-  left: 20%;
+  left: 12%;
   visibility: hidden;
 
 }
@@ -32,7 +32,7 @@ html, body, #map,.row-fluid {
   padding: 3px 15px;
   text-align: center;
   text-decoration: none;
-  display: inline-block;
+  display: block;
   font-size: 12px;
   margin: 7px 2px;
   cursor: pointer;
@@ -65,6 +65,39 @@ html, body, #map,.row-fluid {
   
 }
 
+#search_result_org{
+  position: absolute; 
+  visibility: hidden;
+  max-height: 200px;
+  width:9em;
+  margin-left:1em;
+  overflow:scroll;
+  float:left;
+  background:#eee;
+  border:1px solid #aaa;
+  box-shadow: 2px 2px 6px #999;
+  color:#666;
+  top: 35px;
+  
+}
+
+#search_result_dest{
+  position: absolute; 
+  visibility: hidden;
+  max-height: 200px;
+  width:9em;
+  margin-left:1em;
+  overflow:scroll;
+  float:left;
+  background:#eee;
+  border:1px solid #aaa;
+  box-shadow: 2px 2px 6px #999;
+  color:#666;
+  top: 35px;
+  left: 40%;
+  
+}
+
 .search_res{
   border: 1px solid #999;
   font-family: 'Roboto','sans-serif';
@@ -90,7 +123,7 @@ html, body, #map,.row-fluid {
 }
 
 .search.origin{
-   
+   left: 0px;
 }
 
 .search.dest{ 

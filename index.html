@@ -26,20 +26,27 @@
 		</div>
 
 		<div class="over_map">
-			<input type="button" id="get_direction" class="bnt" value="Get direction" name="1" onclick="getDirection(this.name)" />
+			<input type="button" id="get_direction" class="bnt" value="GET DIRECTION" name="1" onclick="getDirection(this.name)" />
 			
 		</div>
 
 		<div class="over_map input" id="inputOD">
-				<input id="origin" class="search origin" type="text" placeholder="from" onchange="setStartPoint(this.value)"></input>
-				<input id="dest" class="search dest" type="text" placeholder="to" onchange="setDestPoint(this.value)"></input>
-				<input type="button" class="bnt inline" value="GO !!" onclick="convertPlaceNameToCoor()" />
+			<div id="div_origin">
+				<input id="origin" class="search origin" type="text" placeholder="from" onchange="selectStartPoint(this.value)"></input>
+				<div id="search_result_org"></div>
+			</div>
+			<div id="div_dest">
+				<input id="dest" class="search dest" type="text" placeholder="to" onchange="selectDestPoint(this.value)"></input>
+				<div id="search_result_dest"></div>
+			</div>
+			<div id="div_button_go">
+				<input type="button" class="bnt inline" value="GO !!" onclick="calRoute()" />
+			</div>
 		</div>
 
 		<div id="searchBox">
 			<input type="text" placeholder="search place" onchange="searchPlace(this.value)"></input>
-			<div id="search_result">
-		</div>
+			<div id="search_result"></div>
 		</div>
 		
 	</body>
@@ -60,7 +67,6 @@ function searchPlace(place){
 	var search_url = 'http://nominatim.openstreetmap.org/search.php?format=json&q='+place+'&polygon=1&viewbox=';
 	console.log(search_url);
 
-
 	$.ajax({
 		url: search_url, 
 		dataType : 'json',
@@ -69,6 +75,7 @@ function searchPlace(place){
 			div_searchBox.innerHTML = div_searchBox.innerHTML + '<img id="loader" src="image/loader.gif">';
 		},
 		success: function(res){
+			document.getElementById("loader").remove();
 			document.getElementById('search_result').style.visibility = "visible";
 
         	console.log(res);
@@ -125,18 +132,111 @@ function getDirection(value){
 	else{
 		document.getElementById('inputOD').style.visibility = "hidden";
 		document.getElementById('get_direction').name = "1";
-		document.getElementById('get_direction').value= "Get direction";
+		document.getElementById('get_direction').value= "GET DIRECTION";
 	}
 		
 }
-function setStartPoint(str){
+
+function selectStartPoint(str){
+	//hide search result from Dest
+	document.getElementById('search_result_dest').style.visibility = "hidden";
+
+	//but not remove previous input in origin input textbox;
+	document.getElementById('dest').value = dest;
+
 	origin = str;
 	console.log(origin);
+
+	//show search result of origin
+	var res_orgin_req = 'http://nominatim.openstreetmap.org/?format=json&addressdetails=1&q='+origin+'&format=json';
+
+
+	$.ajax({
+		url: res_orgin_req, 
+		dataType : 'json',
+		beforeSend : function(){
+			var div_searchBox = document.getElementById('div_origin');
+			div_searchBox.innerHTML = div_searchBox.innerHTML + '<img id="loader" src="image/loader.gif">';
+		},
+		success: function(res){
+			console.log(res);
+			org_lat = res[0].lat;
+			org_lon = res[0].lon;	
+			document.getElementById('search_result_org').style.visibility = "visible";
+			var div_result = document.getElementById('search_result_org');
+
+			//show result
+			for(var i = 0; i<res.length; i++){
+	        		lat = res[i].lat;
+	        		lon = res[i].lon;
+	        		placeName = res[i].display_name;
+	        		var shorten_placeName = "'"+placeName.toString()+"'";
+	        		console.log('<div class="search_res" onclick="setStartPoint('+lat+","+lon+','+shorten_placeName+')">'+placeName+'</div>');
+	        		div_result.innerHTML = div_result.innerHTML + '<div class="search_res" onclick="setStartPoint('+lat+","+lon+','+shorten_placeName+')">'+placeName+'</div>';
+	        	}
+	    },
+	    complete: function() {
+	    	document.getElementById("loader").remove();
+	    }
+	});
+
 }
 
-function setDestPoint(end){
+function selectDestPoint(end){
+	//hide search result from origin
+	document.getElementById('search_result_org').style.visibility = "hidden";
+	document.getElementById('origin').value = origin;
+
 	dest = end;
 	console.log(dest);
+
+	var res_dest_req = 'http://nominatim.openstreetmap.org/?format=json&addressdetails=1&q='+dest+'&format=json';
+
+	$.ajax({
+		url: res_dest_req, 
+		dataType : 'json',
+		beforeSend : function(){
+			var div_searchBox = document.getElementById('div_dest');
+			div_searchBox.innerHTML = div_searchBox.innerHTML + '<img id="loader" src="image/loader.gif">';
+		},
+		success: function(res){
+			console.log(res);
+			dest_lat = res[0].lat;
+			dest_lon = res[0].lon;	
+			document.getElementById('search_result_dest').style.visibility = "visible";
+
+			var div_result = document.getElementById('search_result_dest');
+
+			//show result
+			for(var i = 0; i<res.length; i++){
+	        		lat = res[i].lat;
+	        		lon = res[i].lon;
+	        		placeName = res[i].display_name;
+	        		var shorten_placeName = "'"+placeName.toString()+"'";
+	        		div_result.innerHTML = div_result.innerHTML + '<div class="search_res" onclick="setDestPoint('+lat+","+lon+','+shorten_placeName+')">'+placeName+'</div>';
+	        	}
+	    },
+	    complete: function() {
+	    	document.getElementById("loader").remove();
+	    }
+	});
+
+}
+
+function setStartPoint(lat,lon,name){
+	console.log(lat+" "+lon);
+
+	document.getElementById("origin").value = name;
+	origin = document.getElementById('origin').value;
+	
+
+}
+
+function setDestPoint(lat,lon,name){
+	console.log(lat+" "+lon);
+
+	document.getElementById("dest").value = name;
+	dest = document.getElementById('dest').value;
 
 }
 
@@ -144,39 +244,15 @@ function convertPlaceNameToCoor(){
 	origin = document.getElementById('origin').value;
 	dest = document.getElementById('dest').value;
 
-	//sample request == http://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=berlin&format=json&limit=1
-	var res_orgin_req = 'http://nominatim.openstreetmap.org/?format=json&addressdetails=1&q='+origin+'&format=json&limit=1';
-
-	var res_dest_req = 'http://nominatim.openstreetmap.org/?format=json&addressdetails=1&q='+dest+'&format=json&limit=1';
-
-	$.ajax({
-		url: res_orgin_req, 
-		dataType : 'json',
-		success: function(res){
-			console.log(res);
-			org_lat = res[0].lat;
-			org_lon = res[0].lon;	
-
-			$.ajax({
-				url: res_dest_req, 
-				dataType : 'json',
-				success: function(result){
-					console.log(result);
-					dest_lat = result[0].lat;
-					dest_lon = result[0].lon;	
-					calRoute();
-			    }
-			});
-	    }
-	});
-
-	
+	calRoute();
 
 }
 
 function calRoute(){ //calRoute : use Skobbler service 
 
-	
+	document.getElementById('search_result_org').style.visibility = "hidden";
+	document.getElementById('search_result_dest').style.visibility = "hidden";
+
 	route_layer.clearLayers(); //clear previous route
 
 	var requestRoute = 'http://'+API_KEY+'.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/'+API_KEY+'?start='+org_lat+','+org_lon+'&dest='+dest_lat+','+dest_lon+'&profile=pedestrian&advice=yes&points=yes';
@@ -187,7 +263,8 @@ function calRoute(){ //calRoute : use Skobbler service
 		url: requestRoute, 
 		dataType : 'json',
 		beforeSend : function(){
-			
+			var div_searchBox = document.getElementById('div_button_go');
+			div_searchBox.innerHTML = div_searchBox.innerHTML + '<img id="loader" src="image/loader.gif">';
 		},
 		success: function(res){
 			console.log(res.route);
@@ -255,7 +332,7 @@ function calRoute(){ //calRoute : use Skobbler service
 			}
 	    },
 	    complete: function() {
-	    	
+	    	document.getElementById("loader").remove();
 	    }
 	});
 
