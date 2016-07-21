@@ -300,6 +300,7 @@ function calRoute(){ //calRoute : use Skobbler service
 
 	route_layer.clearLayers(); //clear previous route
 	turningPoint_layer.clearLayers();
+	badRoute_layer.clearLayers();
 
 	var requestRoute = 'http://'+API_KEY+'.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/'+API_KEY+'?start='+org_lat+','+org_lon+'&dest='+dest_lat+','+dest_lon+'&profile=pedestrian&advice=yes&points=yes';
 
