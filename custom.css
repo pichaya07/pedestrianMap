@@ -2,13 +2,18 @@ body {
     padding: 0;
     margin: 0;
 }
-html, body, #map,.row-fluid {
+html, body,.row-fluid {
     height: 100%;
+    position: fix;
+}
+
+#map{
+  height: 80%;
+  position:fix;
 }
 
 .over_map{
   position: absolute;  
-  top: 10px;
   left: 5%;
   z-index: 99;
   text-align: center;
@@ -40,9 +45,9 @@ html, body, #map,.row-fluid {
 
 #searchBox { 
   position: absolute;  
-  top: 10px;
-  right: 5%;
-  z-index: 5;
+  top: 120px;
+  left: 45px;
+  z-index: 99;
   background-color: #fff;
   border: 1px solid #999;
   text-align: center;
@@ -69,7 +74,7 @@ html, body, #map,.row-fluid {
   position: absolute; 
   visibility: hidden;
   max-height: 200px;
-  width:9em;
+  width:100%;
   margin-left:1em;
   overflow:scroll;
   float:left;
@@ -78,6 +83,7 @@ html, body, #map,.row-fluid {
   box-shadow: 2px 2px 6px #999;
   color:#666;
   top: 35px;
+  z-index: 99;
   
 }
 
@@ -85,7 +91,7 @@ html, body, #map,.row-fluid {
   position: absolute; 
   visibility: hidden;
   max-height: 200px;
-  width:9em;
+  width:100%;
   margin-left:1em;
   overflow:scroll;
   float:left;
@@ -93,9 +99,8 @@ html, body, #map,.row-fluid {
   border:1px solid #aaa;
   box-shadow: 2px 2px 6px #999;
   color:#666;
-  top: 35px;
-  left: 40%;
-  
+  top: 65px;
+   z-index: 99;
 }
 
 .search_res{
@@ -143,14 +148,36 @@ html, body, #map,.row-fluid {
 
 
 #jsonresp {
-	width:10em;
-	min-height:10.5em;
-	margin-left:1em;
-	padding:.25em;
-	overflow-y:scroll;
-	float:left;
-	background:#eee;
-	border:1px solid #aaa;
-	box-shadow: 2px 2px 6px #999;
-	color:#666;
+  width:10em;
+  min-height:10.5em;
+  margin-left:1em;
+  padding:.25em;
+  overflow-y:scroll;
+  float:left;
+  background:#eee;
+  border:1px solid #aaa;
+  box-shadow: 2px 2px 6px #999;
+  color:#666;
+}
+
+.panel{
+  display: block;
+  padding-right: 5%;
+}
+
+.panel.sub{
+  margin:1em;
+  width:100%;
+}
+
+#footer {
+      width:100%;
+      position:fixed;
+      bottom:0;
+      text-align: right;
+    }
+
+#warper{
+  position: relative;
+
 }

@@ -6,7 +6,6 @@
 		<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
 
 		<!-- map -->
-
 		<link rel="stylesheet" href="custom.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
@@ -20,20 +19,34 @@
 		<title>Pedestrian map for Blind</title>
 	</head>
 	<body>
+		<div class="header">
+			<div id="input_panel" class="panel">
+				<input id="txtbox_origin" class="panel sub" type="text" placeholder="from" onchange="selectStartPoint(this.value)" onclick="clearSearchResultDiv()"></input>
+				
+				<input id="txtbox_dest" class="panel sub" type="text" placeholder="to" onchange="selectDestPoint(this.value)" onclick="clearSearchResultDiv()"></input>
+				
+				<input type="button" class="panel sub bnt" value="GO !!" onclick="calRoute()" />
+			
+				<div id="search_result_org"></div>
+				<div id="search_result_dest"></div>
+			</div>
+		</header>
 		
-		<div id="map">
-			
-		</div>
+			<div id="map">
 
-		<div class="over_map">
-			<input type="button" id="get_direction" class="bnt" value="GET DIRECTION" name="1" onclick="getDirection(this.name)" />
-			
+			</div>
+			<div id="searchBox">
+			<input type="text" id="txt_searchPlace" placeholder="search place" onchange="searchPlace(this.value)"></input>
+			<div id="search_result"></div>
 		</div>
+			
+		
+			
 
 		<div class="over_map input" id="inputOD">
 			<div id="div_origin">
 				<input id="origin" class="search origin" type="text" placeholder="from" onchange="selectStartPoint(this.value)" onclick="clearSearchResultDiv()"></input>
-				<div id="search_result_org"></div>
+				
 			</div>
 			<div id="div_dest">
 				<input id="dest" class="search dest" type="text" placeholder="to" onchange="selectDestPoint(this.value)" onclick="clearSearchResultDiv()"></input>
@@ -44,10 +57,7 @@
 			</div>
 		</div>
 
-		<div id="searchBox">
-			<input type="text" placeholder="search place" onchange="searchPlace(this.value)"></input>
-			<div id="search_result"></div>
-		</div>
+		
 		
 	</body>
 </html>
@@ -99,6 +109,8 @@ var warning_icon = L.icon({
 
 function searchPlace(place){
 
+
+
 	var search_url = 'http://nominatim.openstreetmap.org/search.php?format=json&q='+place+'&polygon=1&viewbox=';
 	console.log(search_url);
 
@@ -110,7 +122,7 @@ function searchPlace(place){
 			div_searchBox.innerHTML = div_searchBox.innerHTML + '<img id="loader" src="image/loader.gif">';
 		},
 		success: function(res){
-			document.getElementById("loader").remove();
+			
 			document.getElementById('search_result').style.visibility = "visible";
 
         	console.log(res);
@@ -121,12 +133,18 @@ function searchPlace(place){
         	if(res.length == 0)//if no result
         		div_result.innerHTML = '<div class="search_res noResult">Sorry, no result</div>';
         	else{
+        		//remove previous result
+        		div_result.innerHTML = '';
+
         		//show result
+
 	        	for(var i = 0; i<res.length; i++){
 	        		lat = res[i].lat;
 	        		lon = res[i].lon;
 	        		placeName = res[i].display_name;
-	        		div_result.innerHTML = div_result.innerHTML + '<div class="search_res" onclick="moveTo('+lat+","+lon+')">'+placeName+'</div>';
+	        		div_result.innerHTML = div_result.innerHTML + '<div class="search_res" onclick="moveTo('+lat+","+lon+",'"+placeName+"'"+')">'+placeName+'</div>';
+
+	        		console.log('<div class="search_res" onclick="moveTo('+lat+","+lon+","+placeName.toString()+')">'+placeName+'</div>');
 	        	}
         	}
         	
@@ -137,9 +155,12 @@ function searchPlace(place){
 	});
 }
 
-function moveTo(lat,lon){
+function moveTo(lat,lon,placeName){
 	var circle;
 	map.panTo(L.latLng(lat, lon));
+
+	document.getElementById('search_result').style.visibility = "hidden";
+	document.getElementById('txt_searchPlace').value = placeName;
 
 	circle_layer.clearLayers();
 
@@ -153,25 +174,11 @@ function moveTo(lat,lon){
 
 }
 
-function getDirection(value){
-	console.log(value);
-	if(value==1){
-		document.getElementById('inputOD').style.visibility = "visible";
-		document.getElementById('get_direction').name= "0";
-		document.getElementById('get_direction').value= "collapse";
-		
-	}
-	else{
-		document.getElementById('inputOD').style.visibility = "hidden";
-		document.getElementById('get_direction').name = "1";
-		document.getElementById('get_direction').value= "GET DIRECTION";
-	}
-		
-}
-
 function selectStartPoint(str){
 	//hide search result from Dest
 	document.getElementById('search_result_dest').style.visibility = "hidden";
+	document.getElementById('search_result_org').style.visibility = "hidden";
+
 
 	//but not remove previous input in origin input textbox;
 	document.getElementById('dest').value = dest;
@@ -269,9 +276,10 @@ function setStartPoint(lat,lon,name){
 	console.log(lat+" "+lon);
 	org_lat = lat;
 	org_lon = lon;	
-	document.getElementById("origin").value = name;
+	document.getElementById("txtbox_origin").value = name;
 	origin = document.getElementById('origin').value;
 	
+	document.getElementById('search_result_org').style.visibility = "hidden";
 
 }
 
@@ -280,8 +288,10 @@ function setDestPoint(lat,lon,name){
 	dest_lat = lat;
 	dest_lon = lon;	
 
-	document.getElementById("dest").value = name;
+	document.getElementById("txtbox_dest").value = name;
 	dest = document.getElementById('dest').value;
+
+	document.getElementById('search_result_dest').style.visibility = "hidden";
 
 }
 
@@ -290,8 +300,6 @@ function clearSearchResultDiv(){
 	document.getElementById('search_result_dest').style.visibility = "hidden";
 
 }
-
-
 
 function calRoute(){ //calRoute : use Skobbler service 
 
@@ -302,11 +310,12 @@ function calRoute(){ //calRoute : use Skobbler service
 	turningPoint_layer.clearLayers();
 	badRoute_layer.clearLayers();
 
-	var requestRoute = 'http://'+API_KEY+'.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/'+API_KEY+'?start='+org_lat+','+org_lon+'&dest='+dest_lat+','+dest_lon+'&profile=pedestrian&advice=yes&points=yes';
+	var requestRoute = 'http://'+API_KEY+'.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/'+API_KEY+'?start='+org_lat+','+org_lon+'&dest='+dest_lat+','+dest_lon+'&profile=pedestrian&advice=yes&points=yes,highways=no';
 
-	console.log(requestRoute);
+	console.log(requestRoute.toString());
 
 	$.ajax({
+
 		url: requestRoute, 
 		dataType : 'json',
 		beforeSend : function(){
@@ -384,17 +393,11 @@ function calRoute(){ //calRoute : use Skobbler service
 					marker = L.marker([lat, lon]).addTo(turningPoint_layer);
 					marker.bindPopup(i+") "+inst);
 			}
-
-
-
-
 	    },
 	    complete: function() {
 	    	document.getElementById("loader").remove();
 	    }
 	});
-
-
 }
 
 function getRandomInt(min, max) {
