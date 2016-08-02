@@ -310,13 +310,17 @@ function calRoute(){ //calRoute : use Skobbler service
 	turningPoint_layer.clearLayers();
 	badRoute_layer.clearLayers();
 
-	var requestRoute = 'http://'+API_KEY+'.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/'+API_KEY+'?start='+org_lat+','+org_lon+'&dest='+dest_lat+','+dest_lon+'&profile=pedestrian&advice=yes&points=yes,highways=no';
+	
+
+	var requestRoute = 'http://'+API_KEY+'.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/'+API_KEY+'?start='+org_lat+','+org_lon+'&dest='+dest_lat+','+dest_lon+'&profile=pedestrian&advice=yes&points=yes';
+
+	//requestRoute = 'http://b53b3acef8808a2c0e5fea3c69912e4b.tor.skobbler.net/tor/RSngx/calcroute/json/20_5/en/b53b3acef8808a2c0e5fea3c69912e4b?start=13.8374743,100.5745865&dest=13.9202243,100.6012091&profile=pedestrian&advice=yes';
 
 	console.log(requestRoute.toString());
 
 	$.ajax({
 
-		url: requestRoute, 
+		url: requestRoute.toString(), 
 		dataType : 'json',
 		beforeSend : function(){
 			var div_searchBox = document.getElementById('div_button_go');
